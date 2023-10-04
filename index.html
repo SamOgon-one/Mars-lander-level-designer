@@ -13,12 +13,13 @@
   <br>
   <br>
   • Right mouse click to add starship<br>
-  • Left mouse click to add points, make sure to create only one green landings line<br>
+  • Left mouse click to add points, make sure to create only one green, horizotal landings line<br>
   • Refresh page to reset<br>
   <br>
   
   <canvas id="myCanvas" width="700" height="300"></canvas>
 
+  
   <script>
     const canvas = document.getElementById('myCanvas');
     const context = canvas.getContext('2d');
@@ -30,54 +31,77 @@
     context.rect(0, 0, 700, 300);
     context.stroke();
 
-    // Draw red point on mouse click
+    // Add event listener to canvas
     canvas.addEventListener('mousedown', function(event) {
-      const rect = canvas.getBoundingClientRect();
-      let x = event.clientX - rect.left;
-      let y = event.clientY - rect.top;
-
-      context.beginPath();
-      context.arc(x, y, 5, 0, Math.PI * 2);
-      context.fillStyle = 'red';
-      context.fill();
-
-      if (lastX && lastY) {
-        if (Math.abs(y - lastY) <= 5) {
-          y = lastY;
-        }
-
-        context.beginPath();
-        context.moveTo(lastX, lastY);
-        context.lineTo(x, y);
-
-        if (Math.abs(y - lastY) <= 5) {
-          context.strokeStyle = 'green';
-        } else {
-          context.strokeStyle = 'red';
-        }
-
-        context.lineWidth = 6;
-        context.stroke();
+	  // Draw starship on right mouse click
+      if (event.button === 2) {
+        const img = new Image();
+        img.onload = function() {
+          const x = event.clientX - canvas.offsetLeft;
+          const y = event.clientY - canvas.offsetTop;
+          context.drawImage(img, x, y, 40, 40);
+        };
+        img.src = 'https://www.pngfind.com/pngs/m/261-2611783_take-command-of-an-advanced-starship-starship-png.png';
+		
+        const textarea = document.getElementById('shipTextArea');
+        textarea.value = `x: ${event.clientX}, y: ${event.clientY}`;		
       }
+	
+      // Draw red point on left mouse click
+      if (event.button === 0) {	
+		const rect = canvas.getBoundingClientRect();
+		let x = event.clientX - rect.left;
+		let y = event.clientY - rect.top;
 
+		context.beginPath();
+		context.arc(x, y, 5, 0, Math.PI * 2);
+		context.fillStyle = 'red';
+		context.fill();
+
+		if (lastX && lastY) {
+		  if (Math.abs(y - lastY) <= 5) {
+			y = lastY;
+		  }
+
+		  context.beginPath();
+		  context.moveTo(lastX, lastY);
+		  context.lineTo(x, y);
+
+		  if (Math.abs(y - lastY) <= 5) {
+			context.strokeStyle = 'green';
+		  } else {
+			context.strokeStyle = 'red';
+		  }
+
+		  context.lineWidth = 6;
+		  context.stroke();
+		}
+	  
+	  
       lastX = x;
       lastY = y;
 
       points.push([x*10,y*10]);
-      document.getElementById("points").value = JSON.stringify(points);
+      document.getElementById("pointsTextArea").value = JSON.stringify(points);
+	  }
     });
   </script>
 
   <br>
   <br>  
   Points coordinates<br>  
-  <textarea id="points" rows="10" cols="30"></textarea><br>
-  <button onclick="copyToClipboard()">Copy to Clipboard</button>
+  <textarea id="pointsTextArea" rows="10" cols="30"></textarea><br>
+  <!-- <button onclick="copyToClipboard()">Copy to Clipboard</button><br> -->
+  
+  
+  <br> 
+  Ship coordinates<br>    
+  <textarea id="shipTextArea" rows="4" cols="30"></textarea>  
 
   <script>
     // Copy to clipboard
     function copyToClipboard() {
-      const copyText = document.getElementById("points");
+      const copyText = document.getElementById("pointsTextArea");
       copyText.select();
       copyText.setSelectionRange(0, 99999);
       document.execCommand("copy");
@@ -86,8 +110,32 @@
   </script>
   
   <br>
-  <br>  
-  <a href="https://github.com/SamOgon-one/Mars-lander-level-designer">github</a>
+  <button onclick="saveAsJSON()">Save as JSON</button>
+
+  <script>
+    function saveAsJSON() {
+      const textarea = document.getElementById('shipTextArea');
+	  const textarea2 = document.getElementById("pointsTextArea");
+      const data = {"ship": textarea.value + textarea2.value}; // TODO JSON
+      const json = JSON.stringify(data);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'data.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
   
+  
+  
+  <br>
+  <br> 
+  <br>  
+  <a href="https://github.com/SamOgon-one/Mars-lander-level-designer">github source</a>
+
 </body>
 </html>
